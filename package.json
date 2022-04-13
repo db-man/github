@@ -1,0 +1,24 @@
+{
+  "name": "@db-man/github",
+  "version": "0.1.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/db-man/github.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/db-man/github/issues"
+  },
+  "homepage": "https://github.com/db-man/github#readme",
+  "dependencies": {
+    "@octokit/rest": "^18.12.0",
+    "db-man": "^0.1.2",
+    "js-base64": "^3.7.2"
+  }
+}
