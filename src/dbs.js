@@ -20,7 +20,12 @@ export const isLargeTable = (dbName, tableName) => {
   return table.large;
 };
 
+/**
+ * @param {string} dbName
+ * @param {string} tableName
+ * @returns {Object|null} Returns null when table not found
+ */
 export const getTable = (dbName, tableName) => {
-  if (!dbs) return null;
+  if (!dbs || !dbs[dbName]) return null;
   return dbs[dbName].find(({ name }) => name === tableName);
 };
