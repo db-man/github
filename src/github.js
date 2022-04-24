@@ -1,5 +1,4 @@
 import { Base64 } from "js-base64";
-import { message } from "antd";
 import { constants } from "db-man";
 
 import octokit from "./octokit";
@@ -68,19 +67,17 @@ export const getFile = (path, signal) =>
       console.error("getFile failed, err:", err);
       switch (err.status) {
         case 404:
-          message.error(
-            "Failed to get file: file not found, file path: " + path,
-            10
+          throw new Error(
+            "Failed to get file: file not found, file path: " + path
           );
           break;
         case 403:
-          message.error(
-            "Failed to get file: file too large, file path: " + path,
-            10
+          throw new Error(
+            "Failed to get file: file too large, file path: " + path
           );
           break;
         default:
-          message.error("Unknow error when getting file.", 10);
+          throw new Error("Unknow error when getting file.");
       }
     });
 
