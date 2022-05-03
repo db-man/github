@@ -19,7 +19,7 @@
   "homepage": "https://github.com/db-man/github#readme",
   "dependencies": {
     "@octokit/rest": "^18.12.0",
-    "db-man": "^0.1.4",
+    "db-man": "^0.1.5",
     "js-base64": "^3.7.2"
   },
   "devDependencies": {
