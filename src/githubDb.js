@@ -2,9 +2,32 @@ import { constants } from "db-man";
 
 import { getFileContentAndSha } from "./github";
 import { isLargeTable } from "./dbs";
-import { getBlobContentAndSha, getFile, updateFile } from "./github";
+import { getBlobContentAndSha, getFile, updateFile, deleteFile } from "./github";
+
+/**
+ * Get valid file name
+ * See: https://stackoverflow.com/a/4814088
+ * @param oldStr
+ * @returns POSIX "Fully portable filenames"
+ */
+export const validFilename = (oldStr) => {
+  return oldStr.replace(/[^a-zA-Z0-9._-]/g, "_");
+};
 
 const _getDataFileName = (tableName) => tableName + ".data.json";
+
+const _getRecordFileName = (primaryKeyVal) =>
+  validFilename(primaryKeyVal) + ".json";
+
+/**
+ * @param {string} dbName
+ * @param {string} tableName
+ * @returns Path for GitHub
+ */
+export const getRecordPath = (dbName, tableName, primaryKeyVal) =>
+  `${localStorage.getItem(
+    constants.LS_KEY_GITHUB_REPO_PATH
+  )}/${dbName}/${tableName}/${_getRecordFileName(primaryKeyVal)}`;
 
 /**
  * @param {string} dbName
@@ -57,6 +80,23 @@ export const getTableRows = async (dbName, tableName, signal) => {
 };
 
 /**
+ * @param {string} path
+ * @param {string} dbName
+ * @param {string} tableName
+ * @param {new AbortController().signal} signal
+ * @returns {Promise}
+ */
+export const getRecordFileContentAndSha = (
+  dbName,
+  tableName,
+  primaryKeyVal,
+  signal
+) => {
+  const path = getRecordPath(dbName, tableName, primaryKeyVal);
+  return getFileContentAndSha(path, signal);
+};
+
+/**
  * @param {Object} content File content in JSON object
  * @return {Promise<Response>}
  * response.commit
@@ -66,4 +106,38 @@ export const getTableRows = async (dbName, tableName, signal) => {
 export const updateTableFile = async (dbName, tableName, content, sha) => {
   const path = getDataPath(dbName, tableName);
   return updateFile(path, JSON.stringify(content, null, 1), sha);
+};
+
+/**
+ * @param {Object} content File content in JSON object
+ * @return {Promise<Response>}
+ * response.commit
+ * response.commit.html_url https://github.com/username/reponame/commit/a7f...04d
+ * response.content
+ */
+export const updateRecordFile = async (
+  dbName,
+  tableName,
+  primaryKey,
+  record,
+  sha
+) => {
+  const path = getRecordPath(dbName, tableName, record[primaryKey]);
+  return updateFile(path, JSON.stringify(record, null, "  "), sha);
+};
+
+/**
+ * @return {Promise<Response>}
+ * response.commit
+ * response.commit.html_url https://github.com/username/reponame/commit/a7f...04d
+ * response.content
+ */
+export const deleteRecordFile = async (
+  dbName,
+  tableName,
+  primaryKeyVal,
+  sha
+) => {
+  const path = getRecordPath(dbName, tableName, primaryKeyVal);
+  return deleteFile(path, sha);
 };

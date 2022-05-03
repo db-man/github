@@ -4,19 +4,6 @@ import { constants } from "db-man";
 import octokit from "./octokit";
 
 /**
- * Get valid file name
- * See: https://stackoverflow.com/a/4814088
- * @param oldStr
- * @returns POSIX "Fully portable filenames"
- */
-export const validFilename = (oldStr) => {
-  return oldStr.replace(/[^a-zA-Z0-9._-]/g, "_");
-};
-
-const _getRecordFileName = (primaryKeyVal) =>
-  validFilename(primaryKeyVal) + ".json";
-
-/**
  * What is diff between (https://octokit.github.io/rest.js/v18#git-get-blob)
  * ```js
  * octokit.rest.git.getBlob({ owner, repo, file_sha });
@@ -38,16 +25,6 @@ export const getBlobContentAndSha = (sha, signal) =>
     content: JSON.parse(Base64.decode(response.data.content)),
     sha: response.data.sha,
   }));
-
-/**
- * @param {string} dbName
- * @param {string} tableName
- * @returns Path for GitHub
- */
-export const getRecordPath = (dbName, tableName, primaryKeyVal) =>
-  `${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_PATH
-  )}/${dbName}/${tableName}/${_getRecordFileName(primaryKeyVal)}`;
 
 /**
  * @param {string} path can be a file or a dir
@@ -102,23 +79,6 @@ export const getFileContentAndSha = (path, signal) =>
   });
 
 /**
- * @param {string} path
- * @param {string} dbName
- * @param {string} tableName
- * @param {new AbortController().signal} signal
- * @returns {Promise}
- */
-export const getRecordFileContentAndSha = (
-  dbName,
-  tableName,
-  primaryKeyVal,
-  signal
-) => {
-  const path = getRecordPath(dbName, tableName, primaryKeyVal);
-  return getFileContentAndSha(path, signal);
-};
-
-/**
  * @param {Object} content File content in JSON object
  * @return {Promise<Response>}
  * response.commit
@@ -161,19 +121,40 @@ export const updateFile = async (path, content, sha) => {
 };
 
 /**
- * @param {Object} content File content in JSON object
  * @return {Promise<Response>}
  * response.commit
  * response.commit.html_url https://github.com/username/reponame/commit/a7f...04d
  * response.content
  */
-export const updateRecordFile = async (
-  dbName,
-  tableName,
-  primaryKey,
-  content,
-  sha
-) => {
-  const path = getRecordPath(dbName, tableName, content[primaryKey]);
-  return updateFile(path, JSON.stringify(content, null, "  "), sha);
+export const deleteFile = async (path, sha) => {
+  try {
+    // https://octokit.github.io/rest.js/v18#repos-delete-file
+    const { data } = await octokit.rest.repos.deleteFile({
+      owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
+      repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
+      path,
+      message: "[db-man] delete file",
+      sha,
+      committer: {
+        name: `Octokit Bot`,
+        email: "your-email",
+      },
+      author: {
+        name: "Octokit Bot",
+        email: "your-email",
+      },
+    });
+    return data
+  } catch (error) {
+    console.error("Failed to octokit.rest.repos.deleteFile, error:", error);
+    switch (error.response.status) {
+      case 409:
+        // error.response.data={"message": "dbs_dir/db_name/table_name.data.json does not match c61...e3a","documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
+        // error.response.status=409
+        // file.json does not match c61...e3a
+        throw new Error("Status: 409 Conflict");
+      default:
+        throw error;
+    }
+  }
 };
