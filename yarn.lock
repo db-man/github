@@ -1189,13 +1189,10 @@ core-js-compat@^3.20.2, core-js-compat@^3.21.0:
     browserslist "^4.19.1"
     semver "7.0.0"
 
-db-man@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/db-man/-/db-man-0.1.2.tgz#05470f13e950e72fabf9e663d8b09e4807798a42"
-  integrity sha512-JoyiMTNAt45r+EnJP6pQy3GZOJIBmkdbxRbshhtTHPX6EK8UVXw9HnovSt8venKNUYATVzRGRIzdCKLACM74ng==
-  dependencies:
-    "@octokit/rest" "^18.12.0"
-    js-base64 "^3.7.2"
+db-man@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/db-man/-/db-man-0.1.4.tgz#c8fabb13de9d73919848dfb9651a291cf66b7825"
+  integrity sha512-GaptYO5n3eIY4HygpmB5VOaOfIHZbyepUDCPofyxXZh4iNhMzjCEpRl2Gmw6KcGoXJ429BCXQqzPk6S3JhlSrQ==
 
 debug@^4.1.0, debug@^4.1.1:
   version "4.3.4"
