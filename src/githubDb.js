@@ -1,8 +1,10 @@
-import { constants } from "db-man";
+import { constants } from 'db-man';
 
-import { getFileContentAndSha } from "./github";
-import { isLargeTable } from "./dbs";
-import { getBlobContentAndSha, getFile, updateFile, deleteFile } from "./github";
+import {
+  getFileContentAndSha, getBlobContentAndSha, getFile, updateFile, deleteFile,
+} from './github';
+import { isLargeTable } from './dbs';
+import { getGitHubFullPath } from './utils';
 
 /**
  * Get valid file name
@@ -10,55 +12,48 @@ import { getBlobContentAndSha, getFile, updateFile, deleteFile } from "./github"
  * @param oldStr
  * @returns POSIX "Fully portable filenames"
  */
-export const validFilename = (oldStr) => {
-  return oldStr.replace(/[^a-zA-Z0-9._-]/g, "_");
-};
+export const validFilename = (oldStr) => oldStr.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-const _getDataFileName = (tableName) => tableName + ".data.json";
+const getDataFileName = (tableName) => `${tableName}.data.json`;
 
-const _getRecordFileName = (primaryKeyVal) =>
-  validFilename(primaryKeyVal) + ".json";
+const getRecordFileName = (primaryKeyVal) => `${validFilename(primaryKeyVal)}.json`;
 
 /**
  * @param {string} dbName
  * @param {string} tableName
  * @returns Path for GitHub
  */
-export const getRecordPath = (dbName, tableName, primaryKeyVal) =>
-  `${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_PATH
-  )}/${dbName}/${tableName}/${_getRecordFileName(primaryKeyVal)}`;
+export const getRecordPath = (dbName, tableName, primaryKeyVal) => `${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_PATH,
+)}/${dbName}/${tableName}/${getRecordFileName(primaryKeyVal)}`;
 
 /**
  * @param {string} dbName
  * @param {string} tableName
  * @returns Path for GitHub, e.g. dbs/dbName/tableName.data.json
  */
-export const getDataPath = (dbName, tableName) =>
-  `${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_PATH
-  )}/${dbName}/${_getDataFileName(tableName)}`;
+export const getDataPath = (dbName, tableName) => `${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_PATH,
+)}/${dbName}/${getDataFileName(tableName)}`;
 
 /**
 * @param {string} dbName
 * @param {string} tableName
 * @returns GitHub URL of table data file, e.g. https://github.com/ownerName/repoName/blob/main/dbs/dbName/tableName.data.json
 */
-export const getDataUrl = (dbName, tableName) =>
-  utils.getGitHubFullPath(
-    getDataPath(dbName, tableName)
-  );
+export const getDataUrl = (dbName, tableName) => getGitHubFullPath(
+  getDataPath(dbName, tableName),
+);
 
 /**
  * @return {string} e.g. "dbs/dbName/columns.json"
  */
-const _getDbTableColDefPath = (dbName) =>
-  `${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_PATH
-  )}/${dbName}/columns.json`;
+const getDbTableColDefPath = (dbName) => `${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_PATH,
+)}/${dbName}/columns.json`;
 
 export const getDbTablesSchemaAsync = async (dbName) => {
-  const { content } = await getFileContentAndSha(_getDbTableColDefPath(dbName));
+  const { content } = await getFileContentAndSha(getDbTableColDefPath(dbName));
   return content;
 };
 
@@ -74,19 +69,18 @@ export const getTableRows = async (dbName, tableName, signal) => {
   if (isLargeTable(dbName, tableName)) {
     const files = await getFile(
       `${localStorage.getItem(constants.LS_KEY_GITHUB_REPO_PATH)}/${dbName}`,
-      signal
+      signal,
     );
 
     let sha;
     files.forEach((file) => {
-      if (file.name === _getDataFileName(tableName)) {
+      if (file.name === getDataFileName(tableName)) {
         sha = file.sha;
       }
     });
     return getBlobContentAndSha(sha, signal);
-  } else {
-    return getFileContentAndSha(getDataPath(dbName, tableName), signal);
   }
+  return getFileContentAndSha(getDataPath(dbName, tableName), signal);
 };
 
 /**
@@ -100,7 +94,7 @@ export const getRecordFileContentAndSha = (
   dbName,
   tableName,
   primaryKeyVal,
-  signal
+  signal,
 ) => {
   const path = getRecordPath(dbName, tableName, primaryKeyVal);
   return getFileContentAndSha(path, signal);
@@ -130,10 +124,10 @@ export const updateRecordFile = async (
   tableName,
   primaryKey,
   record,
-  sha
+  sha,
 ) => {
   const path = getRecordPath(dbName, tableName, record[primaryKey]);
-  return updateFile(path, JSON.stringify(record, null, "  "), sha);
+  return updateFile(path, JSON.stringify(record, null, '  '), sha);
 };
 
 /**
@@ -146,7 +140,7 @@ export const deleteRecordFile = async (
   dbName,
   tableName,
   primaryKeyVal,
-  sha
+  sha,
 ) => {
   const path = getRecordPath(dbName, tableName, primaryKeyVal);
   return deleteFile(path, sha);
