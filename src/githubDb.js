@@ -40,6 +40,16 @@ export const getDataPath = (dbName, tableName) =>
   )}/${dbName}/${_getDataFileName(tableName)}`;
 
 /**
+* @param {string} dbName
+* @param {string} tableName
+* @returns GitHub URL of table data file, e.g. https://github.com/ownerName/repoName/blob/main/dbs/dbName/tableName.data.json
+*/
+export const getDataUrl = (dbName, tableName) =>
+  utils.getGitHubFullPath(
+    getDataPath(dbName, tableName)
+  );
+
+/**
  * @return {string} e.g. "dbs/dbName/columns.json"
  */
 const _getDbTableColDefPath = (dbName) =>
