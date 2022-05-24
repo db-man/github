@@ -1,4 +1,4 @@
-import { constants } from "db-man";
+import { constants } from 'db-man';
 
 // // Check something like: "Failed to load resource: the server responded with a status of 409 ()"
 // const _checkError = (response) => {
@@ -26,16 +26,19 @@ import { constants } from "db-man";
  * @param {string} path e.g. dbsDir/dbName/tableName.data.json
  * @returns
  */
-export const getGitHubFullPath = (path) =>
-  `https://github.com/${localStorage.getItem(
-    constants.LS_KEY_GITHUB_OWNER
-  )}/${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_NAME
-  )}/blob/main/${path}`;
+export const getGitHubFullPath = (path) => `https://github.com/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_OWNER,
+)}/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_NAME,
+)}/blob/main/${path}`;
+export const getGitHubUrl = (path) => `https://github.com/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_OWNER,
+)}/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_NAME,
+)}/${path}`;
 
-export const getGitHubHistoryPath = (path) =>
-  `https://github.com/${localStorage.getItem(
-    constants.LS_KEY_GITHUB_OWNER
-  )}/${localStorage.getItem(
-    constants.LS_KEY_GITHUB_REPO_NAME
-  )}/commits/main/${path}`;
+export const getGitHubHistoryPath = (path) => `https://github.com/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_OWNER,
+)}/${localStorage.getItem(
+  constants.LS_KEY_GITHUB_REPO_NAME,
+)}/commits/main/${path}`;

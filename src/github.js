@@ -2,6 +2,7 @@ import { Base64 } from 'js-base64';
 import { constants } from 'db-man';
 
 import octokit from './octokit';
+import { getGitHubUrl } from './utils';
 
 /**
  * What is diff between (https://octokit.github.io/rest.js/v18#git-get-blob)
@@ -41,15 +42,51 @@ export const getFile = (path, signal) => octokit
     console.error('getFile failed, err:', err); // eslint-disable-line no-console
     switch (err.status) {
       case 404:
-        throw new Error(
-          `Failed to get file: file not found, file path: ${path}`,
-        );
+        throw new Error(`Failed to get file: file not found, file path: ${path}`, { cause: err });
       case 403:
-        throw new Error(
-          `Failed to get file: file too large, file path: ${path}`,
-        );
+        throw new Error(`Failed to get file: file too large, file path: ${path}`, { cause: err });
       default:
-        throw new Error('Unknow error when getting file.');
+        throw new Error('Unknow error when getting file.', { cause: err });
+    }
+  });
+
+/**
+ * @param {string} path can be a file or a dir
+ * @param {*} signal
+ * @returns {Promise<[err, File|Files]>}
+ */
+export const getFileV2 = (path, signal) => octokit
+  .request('GET /repos/{owner}/{repo}/contents/{path}', {
+    owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
+    repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
+    path,
+    request: { signal },
+  })
+  .then(({ data }) => [null, data])
+  .catch((err) => {
+    const url = getGitHubUrl(path);
+    switch (err.status) {
+      case 404:
+        return [{
+          type: 'FileNotFound',
+          message: 'Failed to get file: file not found',
+          cause: err,
+          url,
+        }, null];
+      case 403:
+        return [{
+          type: 'FileNoPermission',
+          message: 'Failed to get file: file too large',
+          cause: err,
+          url,
+        }, null];
+      default:
+        return [{
+          type: 'FileNoPermission',
+          message: 'Unknow error when getting file.',
+          cause: err,
+          url,
+        }, null];
     }
   });
 
