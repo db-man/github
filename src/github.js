@@ -1,7 +1,7 @@
-import { Base64 } from "js-base64";
-import { constants } from "db-man";
+import { Base64 } from 'js-base64';
+import { constants } from 'db-man';
 
-import octokit from "./octokit";
+import octokit from './octokit';
 
 /**
  * What is diff between (https://octokit.github.io/rest.js/v18#git-get-blob)
@@ -12,62 +12,57 @@ import octokit from "./octokit";
  * @param {(new AbortController()).signal} signal
  * @returns {Promise}
  */
-const _getBlob = (sha, signal) =>
-  octokit.request("GET /repos/{owner}/{repo}/git/blobs/{sha}", {
-    owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
-    repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
-    sha,
-    request: { signal },
-  });
+const getBlob = (sha, signal) => octokit.request('GET /repos/{owner}/{repo}/git/blobs/{sha}', {
+  owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
+  repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
+  sha,
+  request: { signal },
+});
 
-export const getBlobContentAndSha = (sha, signal) =>
-  _getBlob(sha, signal).then((response) => ({
-    content: JSON.parse(Base64.decode(response.data.content)),
-    sha: response.data.sha,
-  }));
+export const getBlobContentAndSha = (sha, signal) => getBlob(sha, signal).then((response) => ({
+  content: JSON.parse(Base64.decode(response.data.content)),
+  sha: response.data.sha,
+}));
 
 /**
  * @param {string} path can be a file or a dir
  * @param {*} signal
  * @returns {Promise<File|Files>}
  */
-export const getFile = (path, signal) =>
-  octokit
-    .request("GET /repos/{owner}/{repo}/contents/{path}", {
-      owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
-      repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
-      path,
-      request: { signal },
-    })
-    .then(({ data }) => data)
-    .catch((err) => {
-      console.error("getFile failed, err:", err);
-      switch (err.status) {
-        case 404:
-          throw new Error(
-            "Failed to get file: file not found, file path: " + path
-          );
-          break;
-        case 403:
-          throw new Error(
-            "Failed to get file: file too large, file path: " + path
-          );
-          break;
-        default:
-          throw new Error("Unknow error when getting file.");
-      }
-    });
+export const getFile = (path, signal) => octokit
+  .request('GET /repos/{owner}/{repo}/contents/{path}', {
+    owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
+    repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
+    path,
+    request: { signal },
+  })
+  .then(({ data }) => data)
+  .catch((err) => {
+    console.error('getFile failed, err:', err); // eslint-disable-line no-console
+    switch (err.status) {
+      case 404:
+        throw new Error(
+          `Failed to get file: file not found, file path: ${path}`,
+        );
+      case 403:
+        throw new Error(
+          `Failed to get file: file too large, file path: ${path}`,
+        );
+      default:
+        throw new Error('Unknow error when getting file.');
+    }
+  });
 
 /**
  * Get file less than 1MB
  * @param {string} path
  * @returns {Promise}
  */
-export const getFileContentAndSha = (path, signal) =>
-  getFile(path, signal).then(({ content, sha }) => {
+export const getFileContentAndSha = (path, signal) => getFile(path, signal)
+  .then(({ content, sha }) => {
     let rows = [];
-    if (content === "") {
-      // This is a new empty file, maybe just created
+    if (content === '') {
+    // This is a new empty file, maybe just created
       rows = [];
     } else {
       rows = JSON.parse(Base64.decode(content));
@@ -94,26 +89,26 @@ export const updateFile = async (path, content, sha) => {
       repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
       path,
       sha,
-      message: "[db-man] update file",
+      message: '[db-man] update file',
       content: contentEncoded,
       committer: {
-        name: `Octokit Bot`,
-        email: "your-email",
+        name: 'Octokit Bot',
+        email: 'your-email',
       },
       author: {
-        name: "Octokit Bot",
-        email: "your-email",
+        name: 'Octokit Bot',
+        email: 'your-email',
       },
     });
     return data;
   } catch (error) {
-    console.error("Failed to createOrUpdateFileContents, error:", error);
+    console.error('Failed to createOrUpdateFileContents, error:', error);
     switch (error.response.status) {
       case 409:
         // error.response.data={"message": "dbs_dir/db_name/table_name.data.json does not match c61...e3a","documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
         // error.response.status=409
         // file.json does not match c61...e3a
-        throw new Error("Status: 409 Conflict");
+        throw new Error('Status: 409 Conflict');
       default:
         throw error;
     }
@@ -133,26 +128,26 @@ export const deleteFile = async (path, sha) => {
       owner: localStorage.getItem(constants.LS_KEY_GITHUB_OWNER),
       repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
       path,
-      message: "[db-man] delete file",
+      message: '[db-man] delete file',
       sha,
       committer: {
-        name: `Octokit Bot`,
-        email: "your-email",
+        name: 'Octokit Bot',
+        email: 'your-email',
       },
       author: {
-        name: "Octokit Bot",
-        email: "your-email",
+        name: 'Octokit Bot',
+        email: 'your-email',
       },
     });
-    return data
+    return data;
   } catch (error) {
-    console.error("Failed to octokit.rest.repos.deleteFile, error:", error);
+    console.error('Failed to octokit.rest.repos.deleteFile, error:', error);
     switch (error.response.status) {
       case 409:
         // error.response.data={"message": "dbs_dir/db_name/table_name.data.json does not match c61...e3a","documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
         // error.response.status=409
         // file.json does not match c61...e3a
-        throw new Error("Status: 409 Conflict");
+        throw new Error('Status: 409 Conflict');
       default:
         throw error;
     }
