@@ -139,7 +139,7 @@ export const updateFile = async (path, content, sha) => {
     });
     return data;
   } catch (error) {
-    console.error('Failed to createOrUpdateFileContents, error:', error);
+    console.error('Failed to createOrUpdateFileContents, error:', error); // eslint-disable-line no-console
     switch (error.response.status) {
       case 409:
         // error.response.data={"message": "dbs_dir/db_name/table_name.data.json does not match c61...e3a","documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
@@ -178,7 +178,7 @@ export const deleteFile = async (path, sha) => {
     });
     return data;
   } catch (error) {
-    console.error('Failed to octokit.rest.repos.deleteFile, error:', error);
+    console.error('Failed to octokit.rest.repos.deleteFile, error:', error); // eslint-disable-line no-console
     switch (error.response.status) {
       case 409:
         // error.response.data={"message": "dbs_dir/db_name/table_name.data.json does not match c61...e3a","documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
