@@ -109,7 +109,7 @@ export const getRecordFileContentAndSha = (
  */
 export const updateTableFile = async (dbName, tableName, content, sha) => {
   const path = getDataPath(dbName, tableName);
-  return updateFile(path, JSON.stringify(content, null, 1), sha);
+  return updateFile(path, JSON.stringify(content, null, 1), sha, 'Update table file');
 };
 
 /**
@@ -127,7 +127,7 @@ export const updateRecordFile = async (
   sha,
 ) => {
   const path = getRecordPath(dbName, tableName, record[primaryKey]);
-  return updateFile(path, JSON.stringify(record, null, '  '), sha);
+  return updateFile(path, JSON.stringify(record, null, '  '), sha, 'Update record file');
 };
 
 /**

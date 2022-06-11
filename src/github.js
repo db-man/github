@@ -117,7 +117,7 @@ export const getFileContentAndSha = (path, signal) => getFile(path, signal)
  * response.commit.html_url https://github.com/username/reponame/commit/a7f...04d
  * response.content
  */
-export const updateFile = async (path, content, sha) => {
+export const updateFile = async (path, content, sha, msg = 'Update file') => {
   const contentEncoded = Base64.encode(content);
   try {
     const { data } = await octokit.rest.repos.createOrUpdateFileContents({
@@ -126,7 +126,7 @@ export const updateFile = async (path, content, sha) => {
       repo: localStorage.getItem(constants.LS_KEY_GITHUB_REPO_NAME),
       path,
       sha,
-      message: '[db-man] update file',
+      message: `[db-man] ${msg}`,
       content: contentEncoded,
       committer: {
         name: 'Octokit Bot',
