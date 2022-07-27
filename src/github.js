@@ -4,6 +4,16 @@ import { constants } from 'db-man';
 import octokit from './octokit';
 import { getGitHubUrl } from './utils';
 
+const botName = 'db-man-bot';
+const committer = {
+  name: botName,
+  email: 'bot-email',
+};
+const author = {
+  name: botName,
+  email: 'bot-email',
+};
+
 /**
  * What is diff between (https://octokit.github.io/rest.js/v18#git-get-blob)
  * ```js
@@ -128,14 +138,8 @@ export const updateFile = async (path, content, sha, msg = 'Update file') => {
       sha,
       message: `[db-man] ${msg}`,
       content: contentEncoded,
-      committer: {
-        name: 'Octokit Bot',
-        email: 'your-email',
-      },
-      author: {
-        name: 'Octokit Bot',
-        email: 'your-email',
-      },
+      committer,
+      author,
     });
     return data;
   } catch (error) {
@@ -167,14 +171,8 @@ export const deleteFile = async (path, sha) => {
       path,
       message: '[db-man] delete file',
       sha,
-      committer: {
-        name: 'Octokit Bot',
-        email: 'your-email',
-      },
-      author: {
-        name: 'Octokit Bot',
-        email: 'your-email',
-      },
+      committer,
+      author,
     });
     return data;
   } catch (error) {
